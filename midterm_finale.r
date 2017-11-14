@@ -9,8 +9,6 @@ trasp = function()
 	  
 	  if(grepl(".\\.csv", fileC, perl = TRUE) && file.exists(fileC)){  
 	  
-  	  if(!extens == "csv") return("Formato file non corretto")
-  	  
   	  library(tibble)
   	  wholedata = read.csv(datapath, header = FALSE)
   	  wholedata = as_tibble(wholedata)              
