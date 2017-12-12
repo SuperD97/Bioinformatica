@@ -150,6 +150,8 @@ prog3 = function(datapath, output) {
         }else {
           write.table(testo, file = output, append = TRUE, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = FALSE)
         }
+        
+      }
       
     }
     
