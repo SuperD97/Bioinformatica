@@ -1,4 +1,4 @@
-prog3 = function(datapath, type, output) {
+prog3 = function(datapath, output) {
   
   #controllo che il file esista
   if(!is.na(datapath)){
@@ -12,14 +12,16 @@ prog3 = function(datapath, type, output) {
     mydb
     
     text = read.table(datapath, header = FALSE)
+    text = as.matrix(text)
     row = nrow(text)
     
-    #
+    output = paste(output,".txt")
+    
     for(i in 1:row) {
-      r = text[i,]
-      type = r[1]
-      n = r[2]
-      if(type == "Uomo"){
+      type = text[i,1]
+      type = tolower(type)
+      n = text[i,2]
+      if(type == "uomo"){
         res <- dbSendQuery(mydb,"show databases")
         databases <- dbFetch(res)
         databases
@@ -34,14 +36,9 @@ prog3 = function(datapath, type, output) {
         
         ultimo = hg[length(hg)]
         ultimo
-        penultimo = hg[length(hg) -1]
-        penultimo
         
         ul = paste("use ",ultimo, sep="")
         ul
-        
-        pn = paste("use ",penultimo, sep="")
-        pn
         
         #estrazione name e name 2 dall'ultimo database
         res <- dbSendQuery(mydb, ul)
@@ -58,44 +55,17 @@ prog3 = function(datapath, type, output) {
         name2Primo <- dbFetch(res)
         dbClearResult(res)
         
-        #estrazione name e name2 dal penultimo database
-        res <- dbSendQuery(mydb, pn)
-        dbFetch(res)
-        dbClearResult(res)
-        
-        sel = paste("SELECT name FROM ncbiRefSeq where name = '",n,"' or name2 = '",n,"'",sep="")
-        res <- dbSendQuery(mydb, sel)
-        nameSecondo <- dbFetch(res)
-        dbClearResult(res)
-        
-        sel = paste("SELECT name2 FROM ncbiRefSeq where name = '",n,"' or name2 = '",n,"'",sep="")
-        res <- dbSendQuery(mydb, sel)
-        name2Secondo <- dbFetch(res)
-        dbClearResult(res)
-        
         #scrittura output primo database
-        chiave = paste("Specie: ", type, " - db usato: ", ultimo, sep = "")
-        names = c(namePrimo, name2Primo)
-        testo = add_column(.data = names, key = chiave, .before = 1)
-        if( i == 1 )
-        {
-          app = FALSE
-          clnames = outheaders
-        }else
-        {
-          app = TRUE
-          clnames = FALSE
+        testo = paste("Specie: ", type, " - db usato: ", ultimo, " - name: ", namePrimo, " - name2: ", name2Primo, sep = "")
+        if(i == 1){
+          write.table(testo, file = output, append = FALSE, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = FALSE)
+        }else {
+          write.table(testo, file = output, append = TRUE, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = FALSE)
         }
-        write.table(testo, file = output, append = app, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = clnames)  
+          
         
-        #scrittura usando secondo database
-        chiave = paste("Specie: ", type, " - db usato: ", penultimo, sep = "")
-        names = c(nameSecondo, name2Secondo)
-        testo = add_column(.data = names, key = chiave, .before = 1)
         
-        write.table(testo, file = output, append = TRUE, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = FALSE)  
-        
-      }else if(type == "Topo"){
+      }else if(type == "topo"){
         res <- dbSendQuery(mydb,"show databases")
         databases <- dbFetch(res)
         databases
@@ -110,14 +80,9 @@ prog3 = function(datapath, type, output) {
         
         ultimo = mm[length(mm)]
         ultimo
-        penultimo = mm[length(mm) -1]
-        penultimo
         
         ul = paste("use ",ultimo, sep="")
         ul
-        
-        pn = paste("use ",penultimo, sep="")
-        pn
         
         #estrazione name e name 2 dall'ultimo database
         res <- dbSendQuery(mydb, ul)
@@ -134,45 +99,16 @@ prog3 = function(datapath, type, output) {
         name2Primo <- dbFetch(res)
         dbClearResult(res)
         
-        #estrazione name e name2 dal penultimo database
-        res <- dbSendQuery(mydb, pn)
-        dbFetch(res)
-        dbClearResult(res)
-        
-        sel = paste("SELECT name FROM ncbiRefSeq where name = '",n,"' or name2 = '",n,"'",sep="")
-        res <- dbSendQuery(mydb, sel)
-        nameSecondo <- dbFetch(res)
-        dbClearResult(res)
-        
-        sel = paste("SELECT name2 FROM ncbiRefSeq where name = '",n,"' or name2 = '",n,"'",sep="")
-        res <- dbSendQuery(mydb, sel)
-        name2Secondo <- dbFetch(res)
-        dbClearResult(res)
-        
         #scrittura output primo database
-        chiave = paste("Specie: ", type, " - db usato: ", ultimo, sep = "")
-        names = c(namePrimo, name2Primo)
-        testo = add_column(.data = names, key = chiave, .before = 1)
-        if( i == 1 )
-        {
-          app = FALSE
-          clnames = outheaders
-        }else
-        {
-          app = TRUE
-          clnames = FALSE
+        testo = paste("Specie: ", type, " - db usato: ", ultimo, " - name: ", namePrimo, " - name2: ", name2Primo, sep = "")
+        if(i == 1){
+          write.table(testo, file = output, append = FALSE, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = FALSE)
+        }else {
+          write.table(testo, file = output, append = TRUE, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = FALSE)
         }
-        write.table(testo, file = output, append = app, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = clnames)  
-        
-        #scrittura usando secondo database
-        chiave = paste("Specie: ", type, " - db usato: ", penultimo, sep = "")
-        names = c(nameSecondo, name2Secondo)
-        testo = add_column(.data = names, key = chiave, .before = 1)
-        
-        write.table(testo, file = output, append = TRUE, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = FALSE)  
         
         
-      }else if(type == "Ratto"){
+      }else if(type == "ratto"){
         res <- dbSendQuery(mydb,"show databases")
         databases <- dbFetch(res)
         databases
@@ -187,14 +123,9 @@ prog3 = function(datapath, type, output) {
         
         ultimo = rn[length(rn)]
         ultimo
-        penultimo = hrn[length(rn) -1]
-        penultimo
         
         ul = paste("use ",ultimo, sep="")
         ul
-        
-        pn = paste("use ",penultimo, sep="")
-        pn
         
         #estrazione name e name 2 dall'ultimo database
         res <- dbSendQuery(mydb, ul)
@@ -211,52 +142,18 @@ prog3 = function(datapath, type, output) {
         name2Primo <- dbFetch(res)
         dbClearResult(res)
         
-        #estrazione name e name2 dal penultimo database
-        res <- dbSendQuery(mydb, pn)
-        dbFetch(res)
-        dbClearResult(res)
-        
-        sel = paste("SELECT name FROM ncbiRefSeq where name = '",n,"' or name2 = '",n,"'",sep="")
-        res <- dbSendQuery(mydb, sel)
-        nameSecondo <- dbFetch(res)
-        dbClearResult(res)
-        
-        sel = paste("SELECT name2 FROM ncbiRefSeq where name = '",n,"' or name2 = '",n,"'",sep="")
-        res <- dbSendQuery(mydb, sel)
-        name2Secondo <- dbFetch(res)
-        dbClearResult(res)
         
         #scrittura output primo database
-        chiave = paste("Specie: ", type, " - db usato: ", ultimo, sep = "")
-        names = c(namePrimo, name2Primo)
-        testo = add_column(.data = names, key = chiave, .before = 1)
-        if( i == 1 )
-        {
-          app = FALSE
-          clnames = outheaders
-        }else
-        {
-          app = TRUE
-          clnames = FALSE
+        testo = paste("Specie: ", type, " - db usato: ", ultimo, " - name: ", namePrimo, " - name2: ", name2Primo, sep = "")
+        if(i == 1){
+          write.table(testo, file = output, append = FALSE, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = FALSE)
+        }else {
+          write.table(testo, file = output, append = TRUE, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = FALSE)
         }
-        write.table(testo, file = output, append = app, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = clnames)  
-        
-        #scrittura usando secondo database
-        chiave = paste("Specie: ", type, " - db usato: ", penultimo, sep = "")
-        names = c(nameSecondo, name2Secondo)
-        testo = add_column(.data = names, key = chiave, .before = 1)
-        
-        write.table(testo, file = output, append = TRUE, quote = FALSE, sep = ",", na = "", row.names = FALSE, col.names = FALSE)  
-        
-      }
       
     }
     
-    
-    
-    
-    
-    
+    return("File scritto correttamente")
     
   } else {
     print("Operazione annullata")
