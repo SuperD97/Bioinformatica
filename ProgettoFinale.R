@@ -6,7 +6,7 @@ esame = function(file, gruppo = 'Gruppo', parametro = 1, output = 'Risultato.txt
   library(RMySQL)
   
   #Var init
-
+  
   gtexPath = ""
   row = 1
   
@@ -49,7 +49,7 @@ esame = function(file, gruppo = 'Gruppo', parametro = 1, output = 'Risultato.txt
   #sostanzialmente ciclo su una riga sola, questo per non scrivere più volte lo stesso codice
   for(i in 1:row) {
     n = text[i]
-  
+    
     #estraggo name e name2 dal database
     ris = dbSendQuery(mydb, "use hg38")
     dbFetch(ris)
@@ -65,6 +65,56 @@ esame = function(file, gruppo = 'Gruppo', parametro = 1, output = 'Risultato.txt
     name2 = dbFetch(ris)
     dbClearResult(ris)
     
+    select = paste("SELECT chrom FROM wgEncodeGencodeBasicV27 where name = '",name,sep="")
+    ris = dbSendQuery(mydb, select)
+    chrom = dbFetch(ris)
+    dbClearResult(ris)
+    
+    select = paste("SELECT strand FROM wgEncodeGencodeBasicV27 where name = '",name,sep="")
+    ris = dbSendQuery(mydb, select)
+    strand = dbFetch(ris)
+    dbClearResult(ris)
+    
+    select = paste("SELECT txStart FROM wgEncodeGencodeBasicV27 where name = '",name,sep="")
+    ris = dbSendQuery(mydb, select)
+    txStart = dbFetch(ris)
+    dbClearResult(ris)
+    
+    select = paste("SELECT txEnd FROM wgEncodeGencodeBasicV27 where name = '",name,sep="")
+    ris = dbSendQuery(mydb, select)
+    txEnd = dbFetch(ris)
+    dbClearResult(ris)
+    
+    select = paste("SELECT cdsStart FROM wgEncodeGencodeBasicV27 where name = '",name,sep="")
+    ris = dbSendQuery(mydb, select)
+    cdsStart = dbFetch(ris)
+    dbClearResult(ris)
+    
+    select = paste("SELECT cdsEnd FROM wgEncodeGencodeBasicV27 where name = '",name,sep="")
+    ris = dbSendQuery(mydb, select)
+    cdsEnd = dbFetch(ris)
+    dbClearResult(ris)
+    
+    fileEsterno = read.table('gtexTranscExpr', header = FALSE, sep='\t')
+    fileEsterno = as.matrix(fileEsterno)
+    rowFE = nrow(fileEsterno)
+    nostrovalore = ""
+    totValori = ""
+    
+    for(i in 1:roeFE){
+      if(fileEsterno[i, 4] = name & fileEsterno[i, 1] = chrom){
+        serie = fileEsterno[i, 9]
+        singoli = strsplit(serie, ",")
+        nostroValore = singoli[i]
+      }
+      serie = fileEsterno[i, 9]
+      singoli = strsplit(serie, ",")
+      totValori = totValori + singoli[i]
+    }
+    
+    media = totValori/53
+    
+    rapporto = nostrovalore/media
   }
   
   
