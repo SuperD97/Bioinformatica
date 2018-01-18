@@ -6,7 +6,8 @@ esame = function(file, gruppo = 'Gruppo', parametro = 1, output = 'Risultato.txt
   library(RMySQL)
   
   #Var init
-  
+  #Ora di sistema
+  time = Sys.time()
   gtexPath = ""
   row = 1
   
@@ -98,18 +99,18 @@ esame = function(file, gruppo = 'Gruppo', parametro = 1, output = 'Risultato.txt
     fileEsterno = read.table('gtexTranscExpr', header = FALSE, sep='\t')
     fileEsterno = as.matrix(fileEsterno)
     rowFE = nrow(fileEsterno)
-    nostrovalore = ""
-    totValori = ""
+    nostrovalore = 0
+    totValori = 0
     
     for(i in 1:roeFE){
       if(fileEsterno[i, 4] = name & fileEsterno[i, 1] = chrom){
         serie = fileEsterno[i, 9]
         singoli = strsplit(serie, ",")
-        nostroValore = singoli[parametro]
+        nostroValore = as.number(singoli[i])
       }
       serie = fileEsterno[i, 9]
       singoli = strsplit(serie, ",")
-      totValori = totValori + singoli[parametro]
+      totValori = totValori + as.number(singoli[i])
     }
     
     media = totValori/53
@@ -122,14 +123,13 @@ esame = function(file, gruppo = 'Gruppo', parametro = 1, output = 'Risultato.txt
 }
 
 #creo una funzione che scriva su un file di testo i dati richiesti
-scriviLog = function(log, output, dati = "") {
+scriviLog = function(log, output, time, dati = "") {
   
   #Un file di testo txt con nome costituito da: nome script ;data e ora dell'esecuzione dello script.  
   #Il file dovr? contente l'elenco degli input forniti, l'elenco  degli oggetti prodotti dalla funzione ed 
   #eventuali segnali di errore prodotti dalla funzione stessa
   
-  #Ora di sistema
-  time = Sys.time()
+  
   
   #Nome script
   Script_Name = "ProgettoFinale"
