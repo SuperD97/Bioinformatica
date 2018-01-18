@@ -105,11 +105,11 @@ esame = function(file, gruppo = 'Gruppo', parametro = 1, output = 'Risultato.txt
       if(fileEsterno[i, 4] = name & fileEsterno[i, 1] = chrom){
         serie = fileEsterno[i, 9]
         singoli = strsplit(serie, ",")
-        nostroValore = singoli[i]
+        nostroValore = singoli[parametro]
       }
       serie = fileEsterno[i, 9]
       singoli = strsplit(serie, ",")
-      totValori = totValori + singoli[i]
+      totValori = totValori + singoli[parametro]
     }
     
     media = totValori/53
