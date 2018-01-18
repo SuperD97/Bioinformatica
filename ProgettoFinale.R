@@ -55,12 +55,12 @@ esame = function(file, gruppo = 'Gruppo', parametro = 1, output = 'Risultato.txt
     dbFetch(ris)
     dbClearResult(ris)
     
-    select = paste("SELECT name FROM ncbiRefSeq where name = '",n,"' or name2 = '",n,"'",sep="")
+    select = paste("SELECT name FROM wgEncodeGencodeBasicV27 where name = '",n,"' or name2 = '",n,"'",sep="")
     ris = dbSendQuery(mydb, select)
     name = dbFetch(ris)
     dbClearResult(ris)
     
-    select = paste("SELECT name FROM ncbiRefSeq where name = '",n,"' or name2 = '",n,"'",sep="")
+    select = paste("SELECT name FROM wgEncodeGencodeBasicV27 where name = '",n,"' or name2 = '",n,"'",sep="")
     ris = dbSendQuery(mydb, select)
     name2 = dbFetch(ris)
     dbClearResult(ris)
