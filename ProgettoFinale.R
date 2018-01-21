@@ -1,6 +1,6 @@
 #Componenti Gruppo: Giorgio Bancheri, Adriano Crasnich, Gianmaria D'Ambrosi, Simone Rodaro, Marco Tugnizza e Davide Spanghero
 
-esame = function(file, pathFile, gruppo = 'Gruppo', parametro = 1, output = 'Risultato.txt'){
+esame = function(file, pathFile="", gruppo = 'Gruppo', parametro = 1, output = 'Risultato.txt'){
   
   
   library(tibble)
@@ -13,6 +13,7 @@ esame = function(file, pathFile, gruppo = 'Gruppo', parametro = 1, output = 'Ris
   nostrovalore = 0
   totValori = 0
   media = 0
+  rapporto = 0
   dati = ""
   testo = ""
   log = ""
@@ -56,7 +57,7 @@ esame = function(file, pathFile, gruppo = 'Gruppo', parametro = 1, output = 'Ris
       row = length(testo)
     }
   } else {
-    testo = file;                          #vettore di pi? stringhe
+    testo = as.vector(file);                          #vettore di pi? stringhe
     row = length(testo)
   }
   
@@ -66,7 +67,7 @@ esame = function(file, pathFile, gruppo = 'Gruppo', parametro = 1, output = 'Ris
   for(i in 1:row) {
     n = testo[i]
     
-    #estraggo name e name2 dal database
+    #estraggo name , name2, chrom, strand, txStart, txEnd, cdsStart, cdsEnd dal database hg38 e dalla tabella wgEncodeGencodeBasicV27 selezionando per name o name2
     ris = dbSendQuery(mydb, "use hg38")
     dbFetch(ris)
     dbClearResult(ris)
@@ -111,13 +112,14 @@ esame = function(file, pathFile, gruppo = 'Gruppo', parametro = 1, output = 'Ris
     cdsEnd = dbFetch(ris)
     dbClearResult(ris)
     
+    #controllo che il file esista nel percorso passato
     percorso = paste(pathFile, "/gtexTranscExpr")
     if(file.exists(percorso)){
       fileEsterno = read.table(percorso, header = FALSE, sep='\t')
       fileEsterno = as.matrix(fileEsterno)
       rowFE = nrow(fileEsterno)
       
-      
+      #se il file esiste, dopo aver contato le righe estraggo il mio valore di expScore e la media di tutti gli expScore nella posizione scelta (default=1)
       for(i in 1:rowFE){
         if(fileEsterno[i, 4] == name & fileEsterno[i, 1] == chrom){
           serie = fileEsterno[i, 9]
@@ -129,6 +131,7 @@ esame = function(file, pathFile, gruppo = 'Gruppo', parametro = 1, output = 'Ris
         totValori = totValori + as.numeric(singoli[i])
       }
       
+      #dopo aver estratto il mio valore e la somma del valore in ogni riga, faccio la media e il rapporto tra il mio valore e la media
       media = totValori/53
       
       rapporto = nostrovalore/media
@@ -140,11 +143,13 @@ esame = function(file, pathFile, gruppo = 'Gruppo', parametro = 1, output = 'Ris
       log = "Il file gtexTranscExpr non ? stato trovato, quindi i dati non sono stati trascritti"
     }
     
-    testo = paste("name: ", name, " - name2: ", name2 ," - chrom: ", chrom, " - strand: ", strand, " - txStart: ", txStart, " - txEnd: ", txEnd, " - cdsStart: ", cdsStart, " - cdsEnd: ", cdsEnd, " - expScores: ", nostrovalore, " - media: ", media, " - rapporto: ", rapporto, "\n\n", sep="")
+    #compongo il corpo del testo per la sezione dei dati
+    testoFinale = paste("name: ", name, " - name2: ", name2 ," - chrom: ", chrom, " - strand: ", strand, " - txStart: ", txStart, " - txEnd: ", txEnd, " - cdsStart: ", cdsStart, " - cdsEnd: ", cdsEnd, " - expScores: ", nostrovalore, " - media: ", media, " - rapporto: ", rapporto, "\n\n", sep="")
     
-    dati = paste(dati, testo, sep="")
+    dati = paste(dati, testoFinale, sep="")
   }
   
+  #chiamo la funzione per fare la scrittura dell'output su file
   scriviLog(log, elenco_input, output, time, dati = dati)
   
   dbDisconnect(mydb)
