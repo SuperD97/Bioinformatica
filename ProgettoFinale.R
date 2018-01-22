@@ -10,13 +10,15 @@ esame = function(file, pathFile="", gruppo = 'Gruppo', parametro = 1, output = '
   #Ora di sistema
   time = Sys.time()
   row = 1
-  nostrovalore = 0
+  expScores = 0
   totValori = 0
   media = 0
   rapporto = 0
   dati = ""
   testo = ""
   log = ""
+  nameCol = name2Col = chromCol = strandCol = txStartCol = txEndCol = cdsStartCol = cdsEndCol = expScoresCol = mediaCol = rapportoCol = c()
+  
   
   #End var init
   
@@ -48,7 +50,7 @@ esame = function(file, pathFile="", gruppo = 'Gruppo', parametro = 1, output = '
         
       } else {
         log = "File non trovato"
-        scriviLog(log, elenco_input, output, time)
+        scriviLog(log, elenco_input, time)
         return
       }
       
@@ -113,9 +115,10 @@ esame = function(file, pathFile="", gruppo = 'Gruppo', parametro = 1, output = '
     dbClearResult(ris)
     
     #controllo che il file esista nel percorso passato
-    percorso = paste(pathFile, "/gtexTranscExpr")
+    percorso = paste(pathFile, "gtexTranscExpr.gz")
     if(file.exists(percorso)){
-      fileEsterno = read.table(percorso, header = FALSE, sep='\t')
+      #fileEsterno = scan(percorso, sep='\t')
+      fileEsterno = read.table(gzfile(percorso), header=FALSE)
       fileEsterno = as.matrix(fileEsterno)
       rowFE = nrow(fileEsterno)
       
@@ -136,27 +139,98 @@ esame = function(file, pathFile="", gruppo = 'Gruppo', parametro = 1, output = '
       
       rapporto = nostrovalore/media
       
-      nostroValore = as.character(nostroValore)
+      expScores = as.character(nostroValore)
       media = as.character(media)
       rapporto = as.character(rapporto)
     } else {
-      log = "Il file gtexTranscExpr non ? stato trovato, quindi i dati non sono stati trascritti"
+      log = "Il file gtexTranscExpr non è stato trovato, quindi i dati non sono stati trascritti"
     }
     
-    #compongo il corpo del testo per la sezione dei dati
-    testoFinale = paste("name: ", name, " - name2: ", name2 ," - chrom: ", chrom, " - strand: ", strand, " - txStart: ", txStart, " - txEnd: ", txEnd, " - cdsStart: ", cdsStart, " - cdsEnd: ", cdsEnd, " - expScores: ", nostrovalore, " - media: ", media, " - rapporto: ", rapporto, "\n\n", sep="")
+    #creazione delle colonne da inserire nel tibble concatenando ad ogni ciclo i dati estratti, separati da un invio
+    #la funzione unlist() fa in modo che le colonne siano viste come vettori e non come liste
+    nameCol = c(nameCol, name)
+    nameCol = unlist(nameCol)
     
-    dati = paste(dati, testoFinale, sep="")
+    name2Col = c(name2Col, name2)
+    name2Col = unlist(name2Col)
+    
+    chromCol = c(chromCol, chrom)
+    chromCol = unlist(chromCol)
+    
+    strandCol = c(strandCol, strand)
+    strandCol = unlist(strandCol)
+    
+    txStartCol = c(txStartCol, txStart)
+    txStartCol = unlist(txStartCol)
+    
+    txEndCol = c(txEndCol, txEnd)
+    txEndCol = unlist(txEndCol)
+    
+    cdsStartCol = c(cdsStartCol, cdsStart)
+    cdsStartCol = unlist(cdsStartCol)
+    
+    cdsEndCol = c(cdsEndCol, cdsEnd)
+    cdsEndCol = unlist(cdsEndCol)
+    
+    expScoresCol = c(expScoresCol, expScores)
+    expScoresCol = unlist(expScoresCol)
+    
+    mediaCol = c(mediaCol, media)
+    mediaCol = unlist(mediaCol)
+    
+    rapportoCol = c(rapportoCol, rapporto)
+    rapportoCol = unlist(rapportoCol)
   }
   
-  #chiamo la funzione per fare la scrittura dell'output su file
-  scriviLog(log, elenco_input, output, time, dati = dati)
+  #creazione nomi delle colonne e tibble contenente i dati estratti
+  outheaders = c("name","name2","chrom","strand","txStart","txEnd","cdsStart","cdsEnd","expScores","media","rapporto")
+  testoFinale = tibble(nameCol, name2Col, chromCol, strandCol, txStartCol, txEndCol, cdsStartCol, cdsEndCol, expScoresCol, mediaCol, rapportoCol)
+
+  #scrittura su un file di testo di nome uguale al nome del file inserito oppure a Risultato.txt(default)
+  write.table(testoFinale, file = output, quote = FALSE, sep = "\t", row.names = FALSE,
+              col.names = outheaders)
+ 
+  #scrittura file di log contenente anche elenco input
+  scriviLog(log, elenco_input, time)
   
+  #disconnessione dal database
   dbDisconnect(mydb)
 }
 
 #creo una funzione che scriva su un file di testo i dati richiesti
-scriviLog = function(log, elenco_input, output, time, dati = "") {
+scriviLog = function(log, elenco_input, time) {
+  
+  #Un file di testo txt con nome costituito da: nome script ;data e ora dell'esecuzione dello script.  
+  #Il file dovr? contente l'elenco degli input forniti, l'elenco  degli oggetti prodotti dalla funzione ed 
+  #eventuali segnali di errore prodotti dalla funzione stessa
+  
+  #Nome file di output per i log
+  Script_Name = "ProgettoFinale"
+  nome = paste(Script_Name, time, sep = "-")
+
+  #Creo una'unica stringa contenente elenco degli input ed eventuali log prodotti dalla funzione
+  Data_2Write = paste(elenco_input, log, sep="\n\n")
+  
+  #Scrittura del file
+  write.table(Data_2Write, file = nome, quote = FALSE, sep = "", col.names = FALSE, row.names = FALSE)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#creo una funzione che scriva su un file di testo i dati richiesti
+#scriviLog = function(log, elenco_input, output, time, dati = "") {
   
   #Un file di testo txt con nome costituito da: nome script ;data e ora dell'esecuzione dello script.  
   #Il file dovr? contente l'elenco degli input forniti, l'elenco  degli oggetti prodotti dalla funzione ed 
@@ -165,11 +239,12 @@ scriviLog = function(log, elenco_input, output, time, dati = "") {
   
   
   #Nome script
-  Script_Name = "ProgettoFinale"
+#  Script_Name = "ProgettoFinale"
+ # nome = paste(ScriptName, "-", time, sep = "")
   
   #Creo una'unica stringa contenente nome script, ora di accesso, oggetti prodotti e eventuali messaggi d'errore
-  Data_2Write = paste(Script_Name, time, elenco_input, dati, log, sep="\n\n")
+ # Data_2Write = paste(Script_Name, time, elenco_input, dati, log, sep="\n\n")
   
   #Creo un file di nome ProgettoFinale in cui trascrivo tutto
-  write.table(Data_2Write, file = output, quote = FALSE, sep = "", na = "", row.names = FALSE, col.names = FALSE)
-}
+ # write.table(Data_2Write, file = output, quote = FALSE, sep = "", na = "", row.names = FALSE)
+#}
